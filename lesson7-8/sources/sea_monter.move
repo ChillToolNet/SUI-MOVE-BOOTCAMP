@@ -25,6 +25,15 @@ module game_hero::sea_hero {
     const EINVALID_MONSTER_SUPPLY: u64 = 2;
 
     fun init(ctx: &mut TxContext) {
+        create(ctx);
+    }
+
+    #[only_test]
+    public entry fun new_game(ctx: &mut TxContext) {
+        create(ctx);
+    }
+
+    fun create(ctx: &mut TxContext) {
         transfer::transfer(
             SeaHeroAdmin {
                 id: object::new(ctx),
@@ -36,6 +45,7 @@ module game_hero::sea_hero {
             tx_context::sender(ctx)
         )
     }
+
 
     // --- Gameplay ---
     public fun slay(hero: &Hero, monster: SeaMonster): Balance<VBI_TOKEN> {
@@ -53,8 +63,8 @@ module game_hero::sea_hero {
         let current_coin_supply = balance::supply_value(&admin.supply);
         let token_supply_max = admin.token_supply_max;
         assert!(reward_amount < token_supply_max, 0);
-        assert!(token_supply_max - reward_amount >= current_coin_supply, 1);
-        assert!(admin.monster_max - 1 >= admin.monsters_created, 2);
+        assert!(token_supply_max - reward_amount >= current_coin_supply, EINVALID_TOKEN_SUPPLY);
+        assert!(admin.monster_max - 1 >= admin.monsters_created, EINVALID_MONSTER_SUPPLY);
 
         let monster = SeaMonster {
             id: object::new(ctx),

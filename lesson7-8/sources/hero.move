@@ -71,13 +71,18 @@ module game_hero::hero {
 
     const EMONTER_WON: u64 = 0;
     const EP2P_DEFEAT: u64 = 0;
-    const EHERO_TIRED: u64 = 1;
-    const ENOT_ADMIN: u64 = 2;
-    const ENO_SWORD: u64 = 4;
-    const ASSERT_ERR: u64 = 5;
 
     #[allow(unused_function)]
     fun init(ctx: &mut TxContext) {
+        create(ctx);
+    }
+
+    #[only_test]
+    public entry fun new_game(ctx: &mut TxContext) {
+        create(ctx);
+    }
+
+    fun create(ctx: &mut TxContext) {
         let sender = tx_context::sender(ctx);
         let id = object::new(ctx);
         let game_id = object::uid_to_inner(&id);
@@ -284,5 +289,18 @@ module game_hero::hero {
 
     public fun get_game_id(game: &GameInfo): ID {
         object::id(game)
+    }
+
+    #[only_test]
+    public fun delete_hero_test_only(hero: Hero) {
+        let Hero {id, hp: _, mana: _, level: _, experience: _, sword, armor, game_id: _} = hero;
+        object::delete(id);
+        //sword: Option: Some(sword)/None
+        let sword = option::destroy_some(sword); // -> sword
+        let Sword {id: sword_id, magic: _, strength: _, game_id: _} = sword;
+        object::delete(sword_id);
+        let armor = option::destroy_some(armor);
+        let Armor {id: armor_id, guard: _, game_id: _} = armor;
+        object::delete(armor_id); 
     }
 }
